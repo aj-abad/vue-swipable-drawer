@@ -44,13 +44,16 @@ export default {
   methods: {
     closeSidebar() {
       if (this.sidebarStuff.translate == this.sidebarStuff.sidebarWidth) {
+        const deez = this
         anime({
           targets: this.sidebarStuff,
           translate: -1,
           easing: "cubicBezier(.25,.1,.25,1)",
           duration: this.sidebarStuff.sidebarSpeed,
+          complete(){
+            deez.resetDrag()
+          }
         });
-        this.sidebarStuff.isDragging = false;
       }
     },
     panHandler(e) {
@@ -67,15 +70,20 @@ export default {
         this.sidebarStuff.translateFrom = dist;
         this.sidebarStuff.animation = anime({
           targets: this.sidebarStuff,
-          translate: dist,
+          translate: this.sidebarStuff.sidebarWidth,
           easing: "cubicBezier(.25,.1,.25,1)",
-          duration:
-            (this.sidebarStuff.sidebarSpeed * dist) /
-            this.sidebarStuff.sidebarWidth,
-          complete() {
-            deez.sidebarStuff.isDragInitialized = true;
-            deez.firstDragFinishHandler();
+          duration: this.sidebarStuff.sidebarSpeed,
+          update() {
+            if (deez.sidebarStuff.translate >=   e.center.x) {
+              if (deez.sidebarStuff.isSwipe) return 
+              this.pause();
+              deez.sidebarStuff.translateFrom = deez.sidebarStuff.translate
+              deez.sidebarStuff.isDragInitialized = true;
+            }
           },
+          complete(){
+            deez.sidebarStuff.isDragInitialized = true;
+          }
         });
         return;
       }
@@ -125,6 +133,7 @@ export default {
       });
     },
     resetDrag() {
+      console.log("reset")
       this.sidebarStuff.isResetting = false;
       this.sidebarStuff.firstDrag = false;
       this.sidebarStuff.isDragInitialized = false;
@@ -133,20 +142,6 @@ export default {
       this.sidebarStuff.dragFrom = 0;
       this.sidebarStuff.isDragStarted = false;
       this.sidebarStuff.isSwipe = false;
-    },
-    firstDragFinishHandler() {
-      console.log("first drag animation done");
-      console.log(this.sidebarStuff.isSwipe ? "is swipe" : "is not swipe");
-
-      if (this.sidebarStuff.isSwipe) {
-        anime({
-          targets: this.sidebarStuff,
-          translate: this.sidebarStuff.sidebarWidth,
-          easing: "cubicBezier(.25,.1,.25,1)",
-          duration:  (this.sidebarStuff.sidebarSpeed * Math.abs(this.sidebarStuff.sidebarWidth - this.sidebarStuff.translate)) /
-            this.sidebarStuff.sidebarWidth,
-        });
-      }
     },
   },
   computed: {
@@ -175,7 +170,6 @@ export default {
     hammertime.on("pan", (e) => {
       this.panHandler(e);
     });
-    // hammertime.on("swipe", (e) => console.log(e));
     stage.addEventListener("touchend", () => {
       this.touchEndHandler();
     });
@@ -188,9 +182,6 @@ export default {
             this.sidebarStuff.translate - this.sidebarStuff.sidebarWidth
           )) /
         this.sidebarStuff.sidebarWidth,
-      complete() {
-        console.log("initialized");
-      },
     });
   },
 };
