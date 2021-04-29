@@ -1,0 +1,76 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+* {
+    user-select: none;
+}
+
+body {
+    font-size: 1.2rem;
+    perspective: 1000px;
+}
+
+a {
+    text-decoration: none;
+    color: #000;
+}
+
+ul {
+    list-style: none;
+}
+
+small {
+    font-size: 0.75em;
+}
+
+button {
+    outline: none;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    font-size: 1em;
+    user-select: none;
+}
+
+input {
+    border-radius: 0;
+    border: none;
+    outline: none;
+    font-size: 1em;
+    display: block;
+    width: 100%;
+}
+
+input,
+button {
+    font-size: 1em;
+    font-weight: normal;
+}
+
+img {
+    vertical-align: middle;
+    max-width: 100%;
+}
+
+textarea {
+    display: block;
+    min-width: 100%;
+    max-width: 100%;
+    border: none;
+    outline: none;
+    font-size: 1em;
+}
+
+main {
+    height: 100vh;
+    width: 100vw;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
