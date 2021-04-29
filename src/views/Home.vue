@@ -44,15 +44,15 @@ export default {
   methods: {
     closeSidebar() {
       if (this.sidebarStuff.translate == this.sidebarStuff.sidebarWidth) {
-        const deez = this
+        const deez = this;
         anime({
           targets: this.sidebarStuff,
           translate: -1,
           easing: "cubicBezier(.25,.1,.25,1)",
           duration: this.sidebarStuff.sidebarSpeed,
-          complete(){
-            deez.resetDrag()
-          }
+          complete() {
+            deez.resetDrag();
+          },
         });
       }
     },
@@ -61,7 +61,7 @@ export default {
       //drag start
       const deez = this;
       const angle = Math.abs(e.angle.toFixed(2));
-      if (angle <= 8 && angle !== 0 && !this.sidebarStuff.isDragging) {
+      if (angle <= 10 && angle !== 0 && !this.sidebarStuff.isDragging) {
         this.sidebarStuff.isDragging = true;
         const dist =
           e.center.x > this.sidebarStuff.sidebarWidth
@@ -74,16 +74,16 @@ export default {
           easing: "cubicBezier(.25,.1,.25,1)",
           duration: this.sidebarStuff.sidebarSpeed,
           update() {
-            if (deez.sidebarStuff.translate >=   e.center.x) {
-              if (deez.sidebarStuff.isSwipe) return 
+            if (deez.sidebarStuff.translate >= e.center.x) {
+              if (deez.sidebarStuff.isSwipe) return;
               this.pause();
-              deez.sidebarStuff.translateFrom = deez.sidebarStuff.translate
+              deez.sidebarStuff.translateFrom = deez.sidebarStuff.translate;
               deez.sidebarStuff.isDragInitialized = true;
             }
           },
-          complete(){
+          complete() {
             deez.sidebarStuff.isDragInitialized = true;
-          }
+          },
         });
         return;
       }
@@ -103,6 +103,8 @@ export default {
             ? this.sidebarStuff.sidebarWidth
             : dist;
         dist = dist < -1 ? -1 : dist;
+        //console.log(e.velocityX)
+        this.sidebarStuff.exitVelocity = e.velocityX;
         this.sidebarStuff.translate = dist;
       }
     },
@@ -115,10 +117,19 @@ export default {
 
       this.sidebarStuff.isResetting = true;
       const deez = this;
-      const animateTo =
+
+      console.log(this.sidebarStuff.exitVelocity);
+
+      let animateTo =
         this.sidebarStuff.translate > this.sidebarStuff.sidebarWidth / 2
           ? this.sidebarStuff.sidebarWidth
           : -1;
+      animateTo = this.sidebarStuff.exitVelocity < -0.2 ? -1 : animateTo;
+      animateTo =
+        this.sidebarStuff.exitVelocity > 0.2
+          ? this.sidebarStuff.sidebarWidth
+          : animateTo;
+
       this.sidebarStuff.animation = anime({
         targets: this.sidebarStuff,
         translate: animateTo,
@@ -133,7 +144,7 @@ export default {
       });
     },
     resetDrag() {
-      console.log("reset")
+      console.log("reset");
       this.sidebarStuff.isResetting = false;
       this.sidebarStuff.firstDrag = false;
       this.sidebarStuff.isDragInitialized = false;

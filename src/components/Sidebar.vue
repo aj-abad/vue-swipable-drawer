@@ -16,7 +16,8 @@ export default {
 <style scoped>
 #sidebar {
   height: 100%;
-  width: clamp(20rem, 20rem, 100%);
+  width: 22rem;
+  max-width: calc(100% - 2rem);
   background: white;
   position: fixed;
   z-index: 101;
