@@ -30,11 +30,12 @@ export default {
         sidebarSpeed: 250,
         animation: null,
         isDragging: false,
+        isSwipe: false,
         sidebarWidth: 0,
         translate: 0,
         exitVelocity: 0,
-        dragStartX: 0,
-        firstDragX: 0,
+        dragFrom: 0,
+        translateFrom: 0,
         isDragInitialized: false,
         firstDrag: false,
       },
@@ -58,13 +59,12 @@ export default {
       const deez = this;
       const angle = Math.abs(e.angle.toFixed(2));
       if (angle <= 8 && angle !== 0 && !this.sidebarStuff.isDragging) {
-        console.log(e);
         this.sidebarStuff.isDragging = true;
         const dist =
           e.center.x > this.sidebarStuff.sidebarWidth
             ? this.sidebarStuff.sidebarWidth
             : e.center.x;
-        this.sidebarStuff.firstDragX = dist;
+        this.sidebarStuff.translateFrom = dist;
         this.sidebarStuff.animation = anime({
           targets: this.sidebarStuff,
           translate: dist,
@@ -74,6 +74,7 @@ export default {
             this.sidebarStuff.sidebarWidth,
           complete() {
             deez.sidebarStuff.isDragInitialized = true;
+            deez.firstDragFinishHandler();
           },
         });
         return;
@@ -82,13 +83,13 @@ export default {
       if (this.sidebarStuff.isDragInitialized) {
         if (!this.sidebarStuff.firstDrag) {
           this.sidebarStuff.firstDrag = true;
-          this.sidebarStuff.dragStartX = e.center.x;
+          this.sidebarStuff.dragFrom = e.center.x;
           return;
         }
         let dist =
-          this.sidebarStuff.firstDragX +
+          this.sidebarStuff.translateFrom +
           e.center.x -
-          this.sidebarStuff.dragStartX;
+          this.sidebarStuff.dragFrom;
         dist =
           dist > this.sidebarStuff.sidebarWidth
             ? this.sidebarStuff.sidebarWidth
@@ -98,6 +99,12 @@ export default {
       }
     },
     touchEndHandler() {
+      if (!this.sidebarStuff.isDragInitialized) {
+        return (this.sidebarStuff.isSwipe = true);
+      }
+      if (this.sidebarStuff.translate === this.sidebarStuff.sidebarWidth)
+        return this.resetDrag();
+
       this.sidebarStuff.isResetting = true;
       const deez = this;
       const animateTo =
@@ -113,12 +120,32 @@ export default {
             Math.abs(this.sidebarStuff.translate - animateTo)) /
           this.sidebarStuff.sidebarWidth,
         complete() {
-          deez.sidebarStuff.isResetting = false;
-          deez.sidebarStuff.firstDrag = false;
-          deez.sidebarStuff.isDragInitialized = false;
-          deez.sidebarStuff.isDragging = false;
+          deez.resetDrag();
         },
       });
+    },
+    resetDrag() {
+      this.sidebarStuff.isResetting = false;
+      this.sidebarStuff.firstDrag = false;
+      this.sidebarStuff.isDragInitialized = false;
+      this.sidebarStuff.isDragging = false;
+      this.sidebarStuff.translateFrom = 0;
+      this.sidebarStuff.dragFrom = 0;
+      this.sidebarStuff.isDragStarted = false;
+      this.sidebarStuff.isSwipe = false;
+    },
+    firstDragFinishHandler() {
+      console.log("first drag animation done");
+      console.log(this.sidebarStuff.isSwipe ? "is swipe" : "is not swipe");
+
+      if (this.sidebarStuff.isSwipe) {
+        anime({
+          targets: this.sidebarStuff,
+          translate: this.sidebarStuff.sidebarWidth,
+          easing: "cubicBezier(.25,.1,.25,1)",
+          duration: 250,
+        });
+      }
     },
   },
   computed: {
@@ -147,14 +174,19 @@ export default {
     hammertime.on("pan", (e) => {
       this.panHandler(e);
     });
+    // hammertime.on("swipe", (e) => console.log(e));
     stage.addEventListener("touchend", () => {
       this.touchEndHandler();
     });
     this.sidebarStuff.animation = anime({
       targets: this.sidebarStuff,
       translate: -1,
-      easing: "cubicBezier(.25,.1,.25,1)",
-      duration: 250,
+      duration:
+        (this.sidebarStuff.sidebarSpeed *
+          Math.abs(
+            this.sidebarStuff.translate - this.sidebarStuff.sidebarWidth
+          )) /
+        this.sidebarStuff.sidebarWidth,
       complete() {
         console.log("initialized");
       },
