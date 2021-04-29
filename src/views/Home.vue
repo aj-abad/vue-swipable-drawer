@@ -48,7 +48,7 @@ export default {
           targets: this.sidebarStuff,
           translate: -1,
           easing: "cubicBezier(.25,.1,.25,1)",
-          duration: 250,
+          duration: this.sidebarStuff.sidebarSpeed,
         });
         this.sidebarStuff.isDragging = false;
       }
@@ -143,7 +143,8 @@ export default {
           targets: this.sidebarStuff,
           translate: this.sidebarStuff.sidebarWidth,
           easing: "cubicBezier(.25,.1,.25,1)",
-          duration: 250,
+          duration:  (this.sidebarStuff.sidebarSpeed * Math.abs(this.sidebarStuff.sidebarWidth - this.sidebarStuff.translate)) /
+            this.sidebarStuff.sidebarWidth,
         });
       }
     },
