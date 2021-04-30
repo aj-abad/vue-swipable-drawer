@@ -83,6 +83,7 @@ export default {
           },
           complete() {
             deez.sidebarStuff.isDragInitialized = true;
+            if (deez.sidebarStuff.isSwipe) deez.resetDrag();
           },
         });
         return;
