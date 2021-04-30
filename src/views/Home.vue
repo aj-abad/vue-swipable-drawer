@@ -1,7 +1,11 @@
 <template>
   <main id="home">
-    <Sidebar class="sidebar" id="sidebar" :style="sidebarStyle" />
-    <div id="swipe-container" style="padding: 0.5rem">
+    <Sidebar :style="sidebarStyle" />
+    <div
+      id="swipe-container"
+      style="padding: 0.5rem"
+      @touchend="touchEndHandler()"
+    >
       <div
         class="sidebar-overlay"
         :style="opacite"
@@ -27,17 +31,16 @@ export default {
     return {
       sidebarStuff: {
         isResetting: false,
-        sidebarSpeed: 250,
-        animation: null,
+        hasMovedToFinger: false,
+        isDragInitialized: false,
         isDragging: false,
         isSwipe: false,
+        sidebarSpeed: 250,
         sidebarWidth: 0,
         translate: 0,
         exitVelocity: 0,
         dragFrom: 0,
         translateFrom: 0,
-        isDragInitialized: false,
-        firstDrag: false,
       },
     };
   },
@@ -59,39 +62,40 @@ export default {
     panHandler(e) {
       if (this.sidebarStuff.isResetting) return false;
       //drag start
-      const deez = this;
       const angle = Math.abs(e.angle.toFixed(2));
       if (angle <= 10 && angle !== 0 && !this.sidebarStuff.isDragging) {
+        const deez = this;
         this.sidebarStuff.isDragging = true;
         const dist =
           e.center.x > this.sidebarStuff.sidebarWidth
             ? this.sidebarStuff.sidebarWidth
             : e.center.x;
         this.sidebarStuff.translateFrom = dist;
-        this.sidebarStuff.animation = anime({
+        anime({
           targets: this.sidebarStuff,
           translate: this.sidebarStuff.sidebarWidth,
           easing: "cubicBezier(.25,.1,.25,1)",
           duration: this.sidebarStuff.sidebarSpeed,
           update() {
             if (deez.sidebarStuff.translate >= e.center.x) {
-              if (deez.sidebarStuff.isSwipe) return;
-              this.pause();
+              if (deez.sidebarStuff.isSwipe) return false;
               deez.sidebarStuff.translateFrom = deez.sidebarStuff.translate;
-              deez.sidebarStuff.isDragInitialized = true;
+              deez.sidebarStuff.hasMovedToFinger = true;
+              return this.pause();
             }
           },
           complete() {
-            deez.sidebarStuff.isDragInitialized = true;
+            deez.sidebarStuff.translateFrom = deez.sidebarStuff.translate;
+            deez.sidebarStuff.hasMovedToFinger = true;
             if (deez.sidebarStuff.isSwipe) deez.resetDrag();
           },
         });
         return;
       }
       //is dragging
-      if (this.sidebarStuff.isDragInitialized) {
-        if (!this.sidebarStuff.firstDrag) {
-          this.sidebarStuff.firstDrag = true;
+      if (this.sidebarStuff.hasMovedToFinger) {
+        if (!this.sidebarStuff.isDragInitialized) {
+          this.sidebarStuff.isDragInitialized = true;
           this.sidebarStuff.dragFrom = e.center.x;
           return;
         }
@@ -104,13 +108,12 @@ export default {
             ? this.sidebarStuff.sidebarWidth
             : dist;
         dist = dist < -1 ? -1 : dist;
-        //console.log(e.velocityX)
         this.sidebarStuff.exitVelocity = e.velocityX;
         this.sidebarStuff.translate = dist;
       }
     },
     touchEndHandler() {
-      if (!this.sidebarStuff.isDragInitialized) {
+      if (!this.sidebarStuff.hasMovedToFinger) {
         return (this.sidebarStuff.isSwipe = true);
       }
       if (this.sidebarStuff.translate === this.sidebarStuff.sidebarWidth)
@@ -118,8 +121,6 @@ export default {
 
       this.sidebarStuff.isResetting = true;
       const deez = this;
-
-      console.log(this.sidebarStuff.exitVelocity);
 
       let animateTo =
         this.sidebarStuff.translate > this.sidebarStuff.sidebarWidth / 2
@@ -131,7 +132,7 @@ export default {
           ? this.sidebarStuff.sidebarWidth
           : animateTo;
 
-      this.sidebarStuff.animation = anime({
+      anime({
         targets: this.sidebarStuff,
         translate: animateTo,
         easing: "cubicBezier(.25,.1,.25,1)",
@@ -145,15 +146,14 @@ export default {
       });
     },
     resetDrag() {
-      console.log("reset");
       this.sidebarStuff.isResetting = false;
-      this.sidebarStuff.firstDrag = false;
       this.sidebarStuff.isDragInitialized = false;
+      this.sidebarStuff.hasMovedToFinger = false;
       this.sidebarStuff.isDragging = false;
-      this.sidebarStuff.translateFrom = 0;
-      this.sidebarStuff.dragFrom = 0;
       this.sidebarStuff.isDragStarted = false;
       this.sidebarStuff.isSwipe = false;
+      this.sidebarStuff.translateFrom = 0;
+      this.sidebarStuff.dragFrom = 0;
     },
   },
   computed: {
@@ -182,10 +182,7 @@ export default {
     hammertime.on("pan", (e) => {
       this.panHandler(e);
     });
-    stage.addEventListener("touchend", () => {
-      this.touchEndHandler();
-    });
-    this.sidebarStuff.animation = anime({
+    anime({
       targets: this.sidebarStuff,
       translate: -1,
       duration:
