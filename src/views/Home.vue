@@ -1,14 +1,14 @@
 <template>
   <main id="home">
-    <Sidebar :style="sidebarStyle" @sidebar-touch-end="touchEndHandler()" />
+    <sidebar :style="sidebarStyle" @sidebar-touch-end="touchEndHandler()" />
     <div
-      id="swipe-container"
+      ref="swipeContainer"
       style="padding: 0.5rem"
       @touchend="touchEndHandler()"
     >
       <div
         class="sidebar-overlay"
-        :style="opacite"
+        :style="overlayOpacity"
         @click="closeSidebar()"
       ></div>
       <h1 v-for="i in 20" :key="i">
@@ -29,31 +29,29 @@ export default {
   },
   data() {
     return {
-      sidebarStuff: {
-        isOpen: false,
-        isResetting: false,
-        hasMovedToFinger: false,
-        isDragInitialized: false,
-        isDragging: false,
-        isSwipe: false,
-        sidebarSpeed: 250,
-        sidebarWidth: 0,
-        translate: 0,
-        exitVelocity: 0,
-        dragFrom: 0,
-        translateFrom: 0,
-      },
+      isOpen: false,
+      isResetting: false,
+      hasMovedToFinger: false,
+      isDragInitialized: false,
+      isDragging: false,
+      isSwipe: false,
+      sidebarSpeed: 5000,
+      sidebarWidth: 0,
+      translate: 0,
+      exitVelocity: 0,
+      dragFrom: 0,
+      translateFrom: 0,
     };
   },
   methods: {
     closeSidebar() {
-      if (this.sidebarStuff.translate === this.sidebarStuff.sidebarWidth) {
+      if (this.isOpen) {
         const deez = this;
         anime({
-          targets: this.sidebarStuff,
+          targets: this,
           translate: -1,
           easing: "cubicBezier(.25,.1,.25,1)",
-          duration: this.sidebarStuff.sidebarSpeed,
+          duration: this.sidebarSpeed,
           complete() {
             deez.resetSidebar();
           },
@@ -61,147 +59,123 @@ export default {
       }
     },
     panHandler(e) {
-      if (this.sidebarStuff.isResetting) return false;
-      //drag start
+      if (this.isResetting) return false;
+      //start drag and set isDragging
       const angle = Math.abs(e.angle.toFixed(2));
-      if (angle <= 10 && angle !== 0 && !this.sidebarStuff.isDragging) {
+      if (angle <= 10 && e.velocityX > 0 && !this.isDragging) {
         const deez = this;
-        this.sidebarStuff.isDragging = true;
+        this.isDragging = true;
         const dist =
-          e.center.x > this.sidebarStuff.sidebarWidth
-            ? this.sidebarStuff.sidebarWidth
-            : e.center.x;
-        this.sidebarStuff.translateFrom = dist;
+          e.center.x > this.sidebarWidth ? this.sidebarWidth : e.center.x;
+        this.translateFrom = dist;
         anime({
-          targets: this.sidebarStuff,
-          translate: this.sidebarStuff.sidebarWidth,
+          targets: this,
+          translate: this.sidebarWidth,
           easing: "cubicBezier(.25,.1,.25,1)",
-          duration: this.sidebarStuff.sidebarSpeed,
+          duration: this.sidebarSpeed,
           update() {
-            if (deez.sidebarStuff.translate >= e.center.x) {
-              if (deez.sidebarStuff.isSwipe) return false;
-              deez.sidebarStuff.translateFrom = deez.sidebarStuff.translate;
-              deez.sidebarStuff.hasMovedToFinger = true;
-              return this.pause();
+            if (deez.translate >= e.center.x) {
+              if (deez.isSwipe) return false;
+              deez.translateFrom = deez.translate;
+              deez.hasMovedToFinger = true;
+              this.pause();
             }
           },
           complete() {
-            deez.sidebarStuff.translateFrom = deez.sidebarStuff.translate;
-            deez.sidebarStuff.hasMovedToFinger = true;
-            if (deez.sidebarStuff.isSwipe) deez.resetSidebar();
+            deez.translateFrom = deez.translate;
+            deez.hasMovedToFinger = true;
+            if (deez.isSwipe) deez.resetSidebar();
           },
         });
         return;
       }
       //is dragging
-      if (this.sidebarStuff.hasMovedToFinger) {
-        if (!this.sidebarStuff.isDragInitialized) {
-          this.sidebarStuff.isDragInitialized = true;
-          this.sidebarStuff.dragFrom = e.center.x;
+      if (this.hasMovedToFinger) {
+        if (!this.isDragInitialized) {
+          this.isDragInitialized = true;
+          this.dragFrom = e.center.x;
           return;
         }
-        let dist =
-          this.sidebarStuff.translateFrom +
-          e.center.x -
-          this.sidebarStuff.dragFrom;
-        dist =
-          dist > this.sidebarStuff.sidebarWidth
-            ? this.sidebarStuff.sidebarWidth
-            : dist;
+        let dist = this.translateFrom + e.center.x - this.dragFrom;
+        dist = dist > this.sidebarWidth ? this.sidebarWidth : dist;
         dist = dist < -1 ? -1 : dist;
-        this.sidebarStuff.exitVelocity = e.velocityX;
-        this.sidebarStuff.translate = dist;
+        this.exitVelocity = e.velocityX;
+        this.translate = dist;
       }
     },
     touchEndHandler() {
-      if (!this.sidebarStuff.isOpen && !this.sidebarStuff.hasMovedToFinger) {
-        return (this.sidebarStuff.isSwipe = true);
+      this.isResetting = true;
+      if (!this.isOpen && !this.hasMovedToFinger) {
+        return (this.isSwipe = true);
       }
-      this.sidebarStuff.isResetting = true;
+
+      if (this.isOpen) return false;
       const deez = this;
       let animateTo =
-        this.sidebarStuff.translate > this.sidebarStuff.sidebarWidth / 2
-          ? this.sidebarStuff.sidebarWidth
-          : -1;
-      animateTo = this.sidebarStuff.exitVelocity < -0.2 ? -1 : animateTo;
-      animateTo =
-        this.sidebarStuff.exitVelocity > 0.2
-          ? this.sidebarStuff.sidebarWidth
-          : animateTo;
+        this.translate > this.sidebarWidth / 2 ? this.sidebarWidth : -1;
+      animateTo = this.exitVelocity < -0.2 ? -1 : animateTo;
+      animateTo = this.exitVelocity > 0.2 ? this.sidebarWidth : animateTo;
       anime({
-        targets: this.sidebarStuff,
+        targets: this,
         translate: animateTo,
         easing: "cubicBezier(.25,.1,.25,1)",
         duration:
-          (this.sidebarStuff.sidebarSpeed *
-            Math.abs(this.sidebarStuff.translate - animateTo)) /
-          this.sidebarStuff.sidebarWidth,
+          (this.sidebarSpeed * Math.abs(this.translate - animateTo)) /
+          this.sidebarWidth,
         complete() {
           deez.resetSidebar();
         },
       });
     },
     resetSidebar() {
-      this.sidebarStuff.isOpen =
-        this.sidebarStuff.translate === this.sidebarStuff.sidebarWidth;
-      this.sidebarStuff.isResetting = false;
-      this.sidebarStuff.isDragInitialized = false;
-      this.sidebarStuff.hasMovedToFinger = false;
-      this.sidebarStuff.isDragging = false;
-      this.sidebarStuff.isDragStarted = false;
-      this.sidebarStuff.isSwipe = false;
-      this.sidebarStuff.translateFrom = 0;
-      this.sidebarStuff.dragFrom = 0;
+      this.isOpen = this.translate === this.sidebarWidth;
+      this.isResetting = false;
+      this.isDragInitialized = false;
+      this.hasMovedToFinger = false;
+      this.isDragging = false;
+      this.isDragStarted = false;
+      this.isSwipe = false;
+      this.translateFrom = 0;
+      this.dragFrom = 0;
     },
     sidebarPanHandler(e) {
-      if (!this.sidebarStuff.isOpen) return false;
-
-      if (!this.sidebarStuff.isDragStarted) {
+      if (!this.isOpen) return false;
+      if (!this.isDragStarted) {
         const angle = Math.abs(e.angle.toFixed(2));
         const validAngle =
-          (angle <= 180 && angle >= 170) || (angle > 0 && angle <= 10);
+          (e.velocityX !== 0 && angle <= 180 && angle >= 170) || angle <= 10;
         if (validAngle) {
-          this.sidebarStuff.dragFrom = e.center.x;
-          return (this.sidebarStuff.isDragStarted = true);
+          this.dragFrom = e.center.x;
+          return (this.isDragStarted = true);
         }
       }
 
-      let dist =
-        e.center.x -
-        this.sidebarStuff.dragFrom +
-        this.sidebarStuff.sidebarWidth;
+      let dist = e.center.x - this.dragFrom + this.sidebarWidth;
       dist = dist < -1 ? -1 : dist;
-      dist =
-        dist > this.sidebarStuff.sidebarWidth
-          ? this.sidebarStuff.sidebarWidth
-          : dist;
-      this.sidebarStuff.dragFrom = dist === this.sidebarStuff.sidebarWidth ? e.center.x : this.sidebarStuff.dragFrom
-      this.sidebarStuff.translate = dist;
-      this.sidebarStuff.exitVelocity = e.velocityX;
+      dist = dist > this.sidebarWidth ? this.sidebarWidth : dist;
+      this.dragFrom = dist === this.sidebarWidth ? e.center.x : this.dragFrom;
+      this.translate = dist;
+      this.exitVelocity = e.velocityX;
     },
   },
   computed: {
     sidebarStyle: function () {
       return {
-        left: this.sidebarStuff.translate + "px",
+        left: this.translate + "px",
       };
     },
-    opacite: function () {
+    overlayOpacity: function () {
       return {
-        opacity:
-          (this.sidebarStuff.translate / this.sidebarStuff.sidebarWidth) * 0.5,
-        pointerEvents:
-          this.sidebarStuff.translate == this.sidebarStuff.sidebarWidth
-            ? "all"
-            : "none",
+        opacity: (this.translate / this.sidebarWidth) * 0.5,
+        pointerEvents: this.translate == this.sidebarWidth ? "all" : "none",
       };
     },
   },
   mounted() {
-    this.sidebarStuff.sidebarWidth = Math.floor(
+    this.sidebarWidth = Math.floor(
       document.querySelector("#sidebar").offsetWidth
     );
-    const stage = document.querySelector("#swipe-container");
+    const stage = this.$refs.swipeContainer;
     const hammerArea = new Hammer(stage, Hammer.defaults);
     const sidebarArea = new Hammer(
       document.querySelector("#sidebar"),
