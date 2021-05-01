@@ -1,6 +1,6 @@
 <template>
   <main id="home">
-    <Sidebar :style="sidebarStyle" />
+    <Sidebar :style="sidebarStyle" @sidebar-touch-end="touchEndHandler()" />
     <div
       id="swipe-container"
       style="padding: 0.5rem"
@@ -30,6 +30,7 @@ export default {
   data() {
     return {
       sidebarStuff: {
+        isOpen: false,
         isResetting: false,
         hasMovedToFinger: false,
         isDragInitialized: false,
@@ -46,7 +47,7 @@ export default {
   },
   methods: {
     closeSidebar() {
-      if (this.sidebarStuff.translate == this.sidebarStuff.sidebarWidth) {
+      if (this.sidebarStuff.translate === this.sidebarStuff.sidebarWidth) {
         const deez = this;
         anime({
           targets: this.sidebarStuff,
@@ -54,7 +55,7 @@ export default {
           easing: "cubicBezier(.25,.1,.25,1)",
           duration: this.sidebarStuff.sidebarSpeed,
           complete() {
-            deez.resetDrag();
+            deez.resetSidebar();
           },
         });
       }
@@ -87,7 +88,7 @@ export default {
           complete() {
             deez.sidebarStuff.translateFrom = deez.sidebarStuff.translate;
             deez.sidebarStuff.hasMovedToFinger = true;
-            if (deez.sidebarStuff.isSwipe) deez.resetDrag();
+            if (deez.sidebarStuff.isSwipe) deez.resetSidebar();
           },
         });
         return;
@@ -113,15 +114,11 @@ export default {
       }
     },
     touchEndHandler() {
-      if (!this.sidebarStuff.hasMovedToFinger) {
+      if (!this.sidebarStuff.isOpen && !this.sidebarStuff.hasMovedToFinger) {
         return (this.sidebarStuff.isSwipe = true);
       }
-      if (this.sidebarStuff.translate === this.sidebarStuff.sidebarWidth)
-        return this.resetDrag();
-
       this.sidebarStuff.isResetting = true;
       const deez = this;
-
       let animateTo =
         this.sidebarStuff.translate > this.sidebarStuff.sidebarWidth / 2
           ? this.sidebarStuff.sidebarWidth
@@ -131,7 +128,6 @@ export default {
         this.sidebarStuff.exitVelocity > 0.2
           ? this.sidebarStuff.sidebarWidth
           : animateTo;
-
       anime({
         targets: this.sidebarStuff,
         translate: animateTo,
@@ -141,11 +137,13 @@ export default {
             Math.abs(this.sidebarStuff.translate - animateTo)) /
           this.sidebarStuff.sidebarWidth,
         complete() {
-          deez.resetDrag();
+          deez.resetSidebar();
         },
       });
     },
-    resetDrag() {
+    resetSidebar() {
+      this.sidebarStuff.isOpen =
+        this.sidebarStuff.translate === this.sidebarStuff.sidebarWidth;
       this.sidebarStuff.isResetting = false;
       this.sidebarStuff.isDragInitialized = false;
       this.sidebarStuff.hasMovedToFinger = false;
@@ -154,6 +152,32 @@ export default {
       this.sidebarStuff.isSwipe = false;
       this.sidebarStuff.translateFrom = 0;
       this.sidebarStuff.dragFrom = 0;
+    },
+    sidebarPanHandler(e) {
+      if (!this.sidebarStuff.isOpen) return false;
+
+      if (!this.sidebarStuff.isDragStarted) {
+        const angle = Math.abs(e.angle.toFixed(2));
+        const validAngle =
+          (angle <= 180 && angle >= 170) || (angle > 0 && angle <= 10);
+        if (validAngle) {
+          this.sidebarStuff.dragFrom = e.center.x;
+          return (this.sidebarStuff.isDragStarted = true);
+        }
+      }
+
+      let dist =
+        e.center.x -
+        this.sidebarStuff.dragFrom +
+        this.sidebarStuff.sidebarWidth;
+      dist = dist < -1 ? -1 : dist;
+      dist =
+        dist > this.sidebarStuff.sidebarWidth
+          ? this.sidebarStuff.sidebarWidth
+          : dist;
+      this.sidebarStuff.dragFrom = dist === this.sidebarStuff.sidebarWidth ? e.center.x : this.sidebarStuff.dragFrom
+      this.sidebarStuff.translate = dist;
+      this.sidebarStuff.exitVelocity = e.velocityX;
     },
   },
   computed: {
@@ -177,20 +201,15 @@ export default {
     this.sidebarStuff.sidebarWidth = Math.floor(
       document.querySelector("#sidebar").offsetWidth
     );
-    let stage = document.querySelector("#swipe-container");
-    var hammertime = new Hammer(stage, Hammer.defaults);
-    hammertime.on("pan", (e) => {
+    const stage = document.querySelector("#swipe-container");
+    const hammerArea = new Hammer(stage, Hammer.defaults);
+    const sidebarArea = new Hammer(
+      document.querySelector("#sidebar"),
+      Hammer.defaults
+    );
+    sidebarArea.on("pan", (e) => this.sidebarPanHandler(e));
+    hammerArea.on("pan", (e) => {
       this.panHandler(e);
-    });
-    anime({
-      targets: this.sidebarStuff,
-      translate: -1,
-      duration:
-        (this.sidebarStuff.sidebarSpeed *
-          Math.abs(
-            this.sidebarStuff.translate - this.sidebarStuff.sidebarWidth
-          )) /
-        this.sidebarStuff.sidebarWidth,
     });
   },
 };

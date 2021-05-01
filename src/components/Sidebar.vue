@@ -1,5 +1,5 @@
 <template>
-  <div id="sidebar">
+  <div id="sidebar" @touchend="$emit('sidebar-touch-end')">
     <div class="sidebar-header"></div>
   </div>
 </template>
