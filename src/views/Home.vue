@@ -4,6 +4,7 @@
       ref="sidebar"
       :style="`left: ${translate}px`"
       @sidebar-touch-end="touchEndHandler()"
+      :aria-hidden="translate > -1"
     />
     <div
       ref="swipeContainer"
@@ -33,80 +34,77 @@ export default {
   },
   data() {
     return {
+      transitionEasing: "cubicBezier(.25,.1,.25,1)",
+      transitionSpeed: 300,
+      sidebarWidth: 0,
       isOpen: false,
       isResetting: false,
       hasMovedToFinger: false,
       isDragInitialized: false,
       isDragging: false,
       isSwipe: false,
-      sidebarSpeed: 300,
-      sidebarWidth: 0,
       translate: 0,
       exitVelocity: 0,
       dragFrom: 0,
-      translateFrom: 0,
+      translateTo: 0,
     };
   },
   methods: {
     closeSidebar() {
-      if (this.isOpen) {
-        this.isResetting = true;
-        const deez = this;
-        anime({
-          targets: this,
-          translate: -1,
-          easing: "cubicBezier(.25,.1,.25,1)",
-          duration: this.sidebarSpeed,
-          complete() {
-            deez.resetSidebar();
-          },
-        });
-      }
+      if (!this.isOpen) return false;
+      this.isResetting = true;
+      const deez = this;
+      anime({
+        targets: this,
+        translate: -1,
+        easing: this.transitionEasing,
+        duration: this.transitionSpeed,
+        complete() {
+          deez.resetSidebar();
+        },
+      });
     },
     panHandler(e) {
       if (this.isResetting) return false;
-      //start drag and set isDragging
       const angle = Math.abs(e.angle.toFixed(2));
       if (angle <= 10 && e.velocityX > 0 && !this.isDragging) {
+        this.$refs.sidebar.$el.scrollTop = 0
         const deez = this;
         this.isDragging = true;
         const dist =
           e.center.x > this.sidebarWidth ? this.sidebarWidth : e.center.x;
-        this.translateFrom = dist;
+        this.translateTo = dist;
         anime({
           targets: this,
           translate: this.sidebarWidth,
-          easing: "cubicBezier(.25,.1,.25,1)",
-          duration: this.sidebarSpeed,
+          easing: this.transitionEasing,
+          duration: this.transitionSpeed,
           update() {
+            if (deez.isSwipe) return false;
             if (deez.translate >= e.center.x) {
-              if (deez.isSwipe) return false;
-              deez.translateFrom = deez.translate;
+              deez.translateTo = deez.translate;
               deez.hasMovedToFinger = true;
               this.pause();
             }
           },
           complete() {
-            deez.translateFrom = deez.translate;
+            deez.translateTo = deez.translate;
             deez.hasMovedToFinger = true;
             if (deez.isSwipe) deez.resetSidebar();
           },
         });
         return;
       }
-      //is dragging
-      if (this.hasMovedToFinger) {
-        if (!this.isDragInitialized) {
-          this.isDragInitialized = true;
-          this.dragFrom = e.center.x;
-          return;
-        }
-        let dist = this.translateFrom + e.center.x - this.dragFrom;
-        dist = dist > this.sidebarWidth ? this.sidebarWidth : dist;
-        dist = dist < -1 ? -1 : dist;
-        this.exitVelocity = e.velocityX;
-        this.translate = dist;
+      if (!this.hasMovedToFinger) return false;
+      if (!this.isDragInitialized) {
+        this.dragFrom = e.center.x;
+        return (this.isDragInitialized = true);
       }
+      let dist = this.translateTo + e.center.x - this.dragFrom;
+      dist = dist > this.sidebarWidth ? this.sidebarWidth : dist;
+      dist = dist < -1 ? -1 : dist;
+      this.exitVelocity = e.velocityX;
+      this.translate = dist;
     },
     touchEndHandler() {
       if (this.isResetting || this.isSwipe) return false;
@@ -122,9 +120,9 @@ export default {
       anime({
         targets: this,
         translate: animateTo,
-        easing: "cubicBezier(.25,.1,.25,1)",
+        easing: this.transitionEasing,
         duration:
-          (this.sidebarSpeed * Math.abs(this.translate - animateTo)) /
+          (this.transitionSpeed * Math.abs(this.translate - animateTo)) /
           this.sidebarWidth,
         complete() {
           deez.resetSidebar();
@@ -133,12 +131,18 @@ export default {
     },
     resetSidebar() {
       this.isOpen = this.translate === this.sidebarWidth;
-      this.isResetting = this.isDragInitialized = this.hasMovedToFinger = this.isDragging = this.isDragStarted = this.isSwipe = false;
-      this.translateFrom = this.dragFrom = this.exitVelocity = 0;
+      this.isResetting = false;
+      this.isDragInitialized = false;
+      this.hasMovedToFinger = false;
+      this.isDragging = false;
+      this.isSwipe = false;
+      this.translateTo = 0;
+      this.dragFrom = 0;
+      this.exitVelocity = 0;
     },
     sidebarPanHandler(e) {
       if (!this.isOpen || this.isResetting) return false;
-      if (!this.isDragStarted) {
+      if (!this.isDragInitialized) {
         const angle = Math.abs(e.angle.toFixed(2));
         const validAngle =
           Math.abs(e.velocityX) > 0 &&
@@ -146,13 +150,14 @@ export default {
         if (!validAngle) return false;
 
         this.dragFrom = e.center.x;
-        return this.isDragStarted = true;
+        return (this.isDragInitialized = true);
       }
       let dist = e.center.x - this.dragFrom + this.sidebarWidth;
       dist = dist < -1 ? -1 : dist;
       dist = dist > this.sidebarWidth ? this.sidebarWidth : dist;
       this.dragFrom = dist === this.sidebarWidth ? e.center.x : this.dragFrom;
-      this.dragFrom = this.dragFrom > this.sidebarWidth ? this.sidebarWidth : this.dragFrom
+      this.dragFrom =
+        this.dragFrom > this.sidebarWidth ? this.sidebarWidth : this.dragFrom;
       this.translate = dist;
       this.exitVelocity = e.velocityX;
     },
@@ -161,7 +166,7 @@ export default {
     overlayOpacity: function () {
       return {
         opacity: (this.translate / this.sidebarWidth) * 0.5,
-        pointerEvents: this.translate == this.sidebarWidth ? "all" : "none",
+        pointerEvents: this.translate === this.sidebarWidth ? "all" : "none",
       };
     },
   },
@@ -171,10 +176,7 @@ export default {
     );
     const stage = this.$refs.swipeContainer;
     const hammerArea = new Hammer(stage, Hammer.defaults);
-    const sidebarArea = new Hammer(
-      document.querySelector("#sidebar"),
-      Hammer.defaults
-    );
+    const sidebarArea = new Hammer(this.$refs.sidebar.$el, Hammer.defaults);
     sidebarArea.on("pan", (e) => this.sidebarPanHandler(e));
     hammerArea.on("pan", (e) => {
       this.panHandler(e);
@@ -193,5 +195,9 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
+}
+
+.no-touch{
+  pointer-events: none !important
 }
 </style>
