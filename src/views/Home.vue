@@ -139,22 +139,20 @@ export default {
     sidebarPanHandler(e) {
       if (!this.isOpen || this.isResetting) return false;
       if (!this.isDragStarted) {
-        console.log("drag about to start");
         const angle = Math.abs(e.angle.toFixed(2));
         const validAngle =
           Math.abs(e.velocityX) > 0 &&
           ((angle <= 180 && angle >= 170) || angle <= 10);
-       
         if (!validAngle) return false;
 
         this.dragFrom = e.center.x;
-        console.log("drag started");
-        return (this.isDragStarted = true);
+        return this.isDragStarted = true;
       }
       let dist = e.center.x - this.dragFrom + this.sidebarWidth;
       dist = dist < -1 ? -1 : dist;
       dist = dist > this.sidebarWidth ? this.sidebarWidth : dist;
       this.dragFrom = dist === this.sidebarWidth ? e.center.x : this.dragFrom;
+      this.dragFrom = this.dragFrom > this.sidebarWidth ? this.sidebarWidth : this.dragFrom
       this.translate = dist;
       this.exitVelocity = e.velocityX;
     },
