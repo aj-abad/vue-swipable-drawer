@@ -46,6 +46,7 @@ export default {
   methods: {
     closeSidebar() {
       if (this.isOpen) {
+        this.isResetting = true;
         const deez = this;
         anime({
           targets: this,
@@ -104,12 +105,11 @@ export default {
       }
     },
     touchEndHandler() {
+      if (this.isResetting || this.isSwipe) return false;
       this.isResetting = true;
-      if (!this.isOpen && !this.hasMovedToFinger) {
+      if (this.isDragging && !this.hasMovedToFinger) {
         return (this.isSwipe = true);
       }
-
-      if (this.isOpen) return false;
       const deez = this;
       let animateTo =
         this.translate > this.sidebarWidth / 2 ? this.sidebarWidth : -1;
@@ -137,9 +137,10 @@ export default {
       this.isSwipe = false;
       this.translateFrom = 0;
       this.dragFrom = 0;
+      this.exitVelocity = 0;
     },
     sidebarPanHandler(e) {
-      if (!this.isOpen) return false;
+      if (!this.isOpen || this.isResetting) return false;
       if (!this.isDragStarted) {
         const angle = Math.abs(e.angle.toFixed(2));
         const validAngle =
