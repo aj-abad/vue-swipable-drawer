@@ -1,6 +1,8 @@
 <template>
   <div id="sidebar" @touchend="$emit('sidebar-touch-end')">
-    <div class="sidebar-header"></div>
+    <div class="sidebar-header">
+    </div>
+     <h1 v-for="i in 100" :key="i">{{i}}</h1>
   </div>
 </template>
 
@@ -15,6 +17,7 @@ export default {
 
 <style scoped>
 #sidebar {
+  overflow-y: auto;
   height: 100%;
   width: 22rem;
   max-width: calc(100% - 2rem);

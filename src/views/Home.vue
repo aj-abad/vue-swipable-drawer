@@ -1,6 +1,10 @@
 <template>
   <main id="home">
-    <sidebar :style="sidebarStyle" @sidebar-touch-end="touchEndHandler()" />
+    <sidebar
+      ref="sidebar"
+      :style="`left: ${translate}px`"
+      @sidebar-touch-end="touchEndHandler()"
+    />
     <div
       ref="swipeContainer"
       style="padding: 0.5rem"
@@ -35,7 +39,7 @@ export default {
       isDragInitialized: false,
       isDragging: false,
       isSwipe: false,
-      sidebarSpeed: 5000,
+      sidebarSpeed: 300,
       sidebarWidth: 0,
       translate: 0,
       exitVelocity: 0,
@@ -129,28 +133,24 @@ export default {
     },
     resetSidebar() {
       this.isOpen = this.translate === this.sidebarWidth;
-      this.isResetting = false;
-      this.isDragInitialized = false;
-      this.hasMovedToFinger = false;
-      this.isDragging = false;
-      this.isDragStarted = false;
-      this.isSwipe = false;
-      this.translateFrom = 0;
-      this.dragFrom = 0;
-      this.exitVelocity = 0;
+      this.isResetting = this.isDragInitialized = this.hasMovedToFinger = this.isDragging = this.isDragStarted = this.isSwipe = false;
+      this.translateFrom = this.dragFrom = this.exitVelocity = 0;
     },
     sidebarPanHandler(e) {
       if (!this.isOpen || this.isResetting) return false;
       if (!this.isDragStarted) {
+        console.log("drag about to start");
         const angle = Math.abs(e.angle.toFixed(2));
         const validAngle =
-          (e.velocityX !== 0 && angle <= 180 && angle >= 170) || angle <= 10;
-        if (validAngle) {
-          this.dragFrom = e.center.x;
-          return (this.isDragStarted = true);
-        }
-      }
+          Math.abs(e.velocityX) > 0 &&
+          ((angle <= 180 && angle >= 170) || angle <= 10);
+       
+        if (!validAngle) return false;
 
+        this.dragFrom = e.center.x;
+        console.log("drag started");
+        return (this.isDragStarted = true);
+      }
       let dist = e.center.x - this.dragFrom + this.sidebarWidth;
       dist = dist < -1 ? -1 : dist;
       dist = dist > this.sidebarWidth ? this.sidebarWidth : dist;
@@ -160,11 +160,6 @@ export default {
     },
   },
   computed: {
-    sidebarStyle: function () {
-      return {
-        left: this.translate + "px",
-      };
-    },
     overlayOpacity: function () {
       return {
         opacity: (this.translate / this.sidebarWidth) * 0.5,
