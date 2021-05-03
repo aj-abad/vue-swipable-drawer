@@ -71,9 +71,6 @@ export default {
         this.$refs.sidebar.$el.scrollTop = 0
         const deez = this;
         this.isDragging = true;
-        const dist =
-          e.center.x > this.sidebarWidth ? this.sidebarWidth : e.center.x;
-        this.translateTo = dist;
         anime({
           targets: this,
           translate: this.sidebarWidth,
