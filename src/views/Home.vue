@@ -4,7 +4,7 @@
       ref="sidebar"
       :style="`left: ${translate}px`"
       @sidebar-touch-end="touchEndHandler()"
-      :aria-hidden="translate > -1"
+      :aria-hidden="translate === -1"
     />
     <div
       ref="swipeContainer"
@@ -68,20 +68,21 @@ export default {
     panHandler(e) {
       if (this.isResetting) return false;
       if (this.isDragging && !this.hasMovedToFinger)
-       return this.startSidebarDragTo = e.center.x;
+        return (this.startSidebarDragTo = e.center.x);
       const angle = Math.abs(e.angle.toFixed(2));
       if (angle <= 10 && e.velocityX > 0 && !this.isDragging) {
+        this.startSidebarDragTo = e.center.x;
         this.$refs.sidebar.$el.scrollTop = 0;
         const deez = this;
         this.isDragging = true;
-        anime({
+        return anime({
           targets: this,
           translate: this.sidebarWidth,
           easing: this.transitionEasing,
           duration: this.transitionSpeed,
           update() {
             if (deez.isSwipe) return false;
-            if (deez.translate >= deez.startSidebarDragTo) {
+            if (deez.translate > deez.startSidebarDragTo) {
               deez.translateTo = deez.translate;
               deez.hasMovedToFinger = true;
               this.pause();
@@ -93,28 +94,37 @@ export default {
             if (deez.isSwipe) deez.resetSidebar();
           },
         });
-        return;
       }
       if (!this.hasMovedToFinger) return false;
       if (!this.isDragInitialized) {
-        this.dragFrom = e.center.x > this.sidebarWidth ? this.sidebarWidth : e.center.x;
+        this.dragFrom =
+          e.center.x > this.sidebarWidth ? this.sidebarWidth : e.center.x;
 
         return (this.isDragInitialized = true);
       }
-      //this.translateTo = e.center.x > this.sidebarWidth ? this.sidebarWidth : this.translateTo
+      if (e.center.x >= this.sidebarWidth) {
+        this.dragFrom = this.sidebarWidth;
+        this.translateTo = this.sidebarWidth;
+      }
+
+      if (
+        this.translate === this.sidebarWidth &&
+        this.dragFrom <= this.sidebarWidth
+      ) {
+        console.log("update drag origin");
+      }
       let dist = this.translateTo + e.center.x - this.dragFrom;
       dist = dist > this.sidebarWidth ? this.sidebarWidth : dist;
       dist = dist < -1 ? -1 : dist;
-     
       this.exitVelocity = e.velocityX;
       this.translate = dist;
     },
     touchEndHandler() {
       if (this.isResetting || this.isSwipe) return false;
-      this.isResetting = true;
       if (this.isDragging && !this.hasMovedToFinger) {
         return (this.isSwipe = true);
       }
+      this.isResetting = true;
       const deez = this;
       let animateTo =
         this.translate > this.sidebarWidth / 2 ? this.sidebarWidth : -1;
