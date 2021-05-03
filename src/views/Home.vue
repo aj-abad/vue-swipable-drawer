@@ -47,6 +47,7 @@ export default {
       exitVelocity: 0,
       dragFrom: 0,
       translateTo: 0,
+      startSidebarDragTo: 0,
     };
   },
   methods: {
@@ -66,9 +67,11 @@ export default {
     },
     panHandler(e) {
       if (this.isResetting) return false;
+      if (this.isDragging && !this.hasMovedToFinger)
+       return this.startSidebarDragTo = e.center.x;
       const angle = Math.abs(e.angle.toFixed(2));
       if (angle <= 10 && e.velocityX > 0 && !this.isDragging) {
-        this.$refs.sidebar.$el.scrollTop = 0
+        this.$refs.sidebar.$el.scrollTop = 0;
         const deez = this;
         this.isDragging = true;
         anime({
@@ -78,7 +81,7 @@ export default {
           duration: this.transitionSpeed,
           update() {
             if (deez.isSwipe) return false;
-            if (deez.translate >= e.center.x) {
+            if (deez.translate >= deez.startSidebarDragTo) {
               deez.translateTo = deez.translate;
               deez.hasMovedToFinger = true;
               this.pause();
@@ -94,12 +97,15 @@ export default {
       }
       if (!this.hasMovedToFinger) return false;
       if (!this.isDragInitialized) {
-        this.dragFrom = e.center.x;
+        this.dragFrom = e.center.x > this.sidebarWidth ? this.sidebarWidth : e.center.x;
+
         return (this.isDragInitialized = true);
       }
+      //this.translateTo = e.center.x > this.sidebarWidth ? this.sidebarWidth : this.translateTo
       let dist = this.translateTo + e.center.x - this.dragFrom;
       dist = dist > this.sidebarWidth ? this.sidebarWidth : dist;
       dist = dist < -1 ? -1 : dist;
+     
       this.exitVelocity = e.velocityX;
       this.translate = dist;
     },
@@ -136,6 +142,7 @@ export default {
       this.translateTo = 0;
       this.dragFrom = 0;
       this.exitVelocity = 0;
+      this.startSidebarDragTo = 0;
     },
     sidebarPanHandler(e) {
       if (!this.isOpen || this.isResetting) return false;
@@ -194,7 +201,7 @@ export default {
   left: 0;
 }
 
-.no-touch{
-  pointer-events: none !important
+.no-touch {
+  pointer-events: none !important;
 }
 </style>
