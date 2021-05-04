@@ -1,10 +1,12 @@
 <template>
   <main id="home">
     <drawer-container>
-      <h1>DDD</h1>
-      <h1>DDD</h1>
-      <h1>DDD</h1>
-      <h1>DDD</h1>
+       <template v-slot:sidebar>
+        <h1 v-for="j in 26" :key="j">{{j -26}}</h1>
+      </template>
+      <template v-slot:content>
+        <h1 v-for="i in 100" :key="i">d</h1>
+      </template>
     </drawer-container>
   </main>
 </template>
@@ -19,6 +21,8 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+
+
 .fade-leave-active {
   position: absolute;
   top: 0;

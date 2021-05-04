@@ -1,14 +1,17 @@
 <template>
   <div>
-    <sidebar
+    <aside
+      id="sidebar"
       ref="sidebar"
       :style="`left: ${translate}px`"
-      @sidebar-touch-end="touchEndHandler()"
+      @touchend="touchEndHandler()"
       :class="{
         'swipable-drawer-hidden': translate === -1,
         'swipable-drawer-unclickable': translate < sidebarWidth,
       }"
-    />
+    >
+     <slot name="sidebar"/>
+    </aside>
 
     <div
       class="sidebar-overlay"
@@ -16,19 +19,15 @@
       @click="closeSidebar()"
     ></div>
     <div class="full-height" ref="swipeContainer" @touchend="touchEndHandler()">
-      <slot/>
+      <slot name="content" />
     </div>
   </div>
 </template>
 
 <script>
-import Sidebar from "@/components/Sidebar";
 import Hammer from "hammerjs";
 import anime from "animejs/lib/anime.es.js";
 export default {
-  components: {
-    Sidebar,
-  },
   data() {
     return {
       transitionEasing: "cubicBezier(.25,.1,.25,1)",
@@ -69,7 +68,7 @@ export default {
       const angle = Math.abs(e.angle.toFixed(2));
       if (angle <= 10 && e.velocityX > 0 && !this.isDragging) {
         this.startSidebarDragTo = e.center.x;
-        this.$refs.sidebar.$el.scrollTop = 0;
+        this.$refs.sidebar.scrollTop = 0;
         const deez = this;
         this.isDragging = true;
         return anime({
@@ -188,7 +187,7 @@ export default {
     );
     const stage = this.$refs.swipeContainer;
     const hammerArea = new Hammer(stage, Hammer.defaults);
-    const sidebarArea = new Hammer(this.$refs.sidebar.$el, Hammer.defaults);
+    const sidebarArea = new Hammer(this.$refs.sidebar, Hammer.defaults);
     sidebarArea.on("pan", (e) => this.sidebarPanHandler(e));
     hammerArea.on("pan", (e) => {
       this.panHandler(e);
@@ -198,7 +197,18 @@ export default {
 </script>
 
 <style scoped>
-.full-height{
+#sidebar {
+  overflow-y: auto;
+  height: 100%;
+  width: 22rem;
+  max-width: calc(100%);
+  background: white;
+  position: fixed;
+  z-index: 101;
+  transform: translateX(-100%);
+}
+
+.full-height {
   min-height: 100vh;
 }
 .fade-leave-active {
