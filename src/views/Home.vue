@@ -106,12 +106,13 @@ export default {
         this.dragFrom = this.sidebarWidth;
         this.translateTo = this.sidebarWidth;
       }
-
       if (
         this.translate === this.sidebarWidth &&
-        this.dragFrom <= this.sidebarWidth
+        this.dragFrom <= this.sidebarWidth &&
+        this.dragFrom < e.center.x
       ) {
-        console.log("update drag origin");
+        this.dragFrom = e.center.x
+        this.translateTo = this.sidebarWidth
       }
       let dist = this.translateTo + e.center.x - this.dragFrom;
       dist = dist > this.sidebarWidth ? this.sidebarWidth : dist;
