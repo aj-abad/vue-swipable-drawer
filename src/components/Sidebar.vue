@@ -1,14 +1,13 @@
 <template>
-  <div id="sidebar" @touchend="$emit('sidebar-touch-end')">
-    <div class="sidebar-header">
-    </div>
-     <h1 v-for="i in 100" :key="i">{{i}}</h1>
-  </div>
+  <aside id="sidebar" @touchend="$emit('sidebar-touch-end')">
+    <div class="sidebar-header"></div>
+    <h1 v-for="i in 100" :key="i">{{ i }}</h1>
+  </aside>
 </template>
 
 <script>
 export default {
-  name: "Sidebar",
+  name: "Sidebar"
 };
 </script>
 

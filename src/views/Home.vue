@@ -4,7 +4,10 @@
       ref="sidebar"
       :style="`left: ${translate}px`"
       @sidebar-touch-end="touchEndHandler()"
-      :aria-hidden="translate === -1"
+      :class="{
+        'swipable-drawer-hidden': translate === -1,
+        'swipable-drawer-unclickable': translate < sidebarWidth
+      }"
     />
     <div
       ref="swipeContainer"
@@ -30,7 +33,7 @@ import Hammer from "hammerjs";
 import anime from "animejs/lib/anime.es.js";
 export default {
   components: {
-    Sidebar,
+    Sidebar
   },
   data() {
     return {
@@ -47,7 +50,7 @@ export default {
       exitVelocity: 0,
       dragFrom: 0,
       translateTo: 0,
-      startSidebarDragTo: 0,
+      startSidebarDragTo: 0
     };
   },
   methods: {
@@ -62,7 +65,7 @@ export default {
         duration: this.transitionSpeed,
         complete() {
           deez.resetSidebar();
-        },
+        }
       });
     },
     panHandler(e) {
@@ -92,7 +95,7 @@ export default {
             deez.translateTo = deez.translate;
             deez.hasMovedToFinger = true;
             if (deez.isSwipe) deez.resetSidebar();
-          },
+          }
         });
       }
       if (!this.hasMovedToFinger) return false;
@@ -106,12 +109,13 @@ export default {
         this.dragFrom = this.sidebarWidth;
         this.translateTo = this.sidebarWidth;
       }
-
       if (
         this.translate === this.sidebarWidth &&
-        this.dragFrom <= this.sidebarWidth
+        this.dragFrom <= this.sidebarWidth &&
+        this.dragFrom < e.center.x
       ) {
-        console.log("update drag origin");
+        this.dragFrom = e.center.x;
+        this.translateTo = this.sidebarWidth;
       }
       let dist = this.translateTo + e.center.x - this.dragFrom;
       dist = dist > this.sidebarWidth ? this.sidebarWidth : dist;
@@ -139,7 +143,7 @@ export default {
           this.sidebarWidth,
         complete() {
           deez.resetSidebar();
-        },
+        }
       });
     },
     resetSidebar() {
@@ -174,15 +178,15 @@ export default {
         this.dragFrom > this.sidebarWidth ? this.sidebarWidth : this.dragFrom;
       this.translate = dist;
       this.exitVelocity = e.velocityX;
-    },
+    }
   },
   computed: {
-    overlayOpacity: function () {
+    overlayOpacity() {
       return {
         opacity: (this.translate / this.sidebarWidth) * 0.5,
-        pointerEvents: this.translate === this.sidebarWidth ? "all" : "none",
+        pointerEvents: this.translate === this.sidebarWidth ? "all" : "none"
       };
-    },
+    }
   },
   mounted() {
     this.sidebarWidth = Math.floor(
@@ -191,11 +195,11 @@ export default {
     const stage = this.$refs.swipeContainer;
     const hammerArea = new Hammer(stage, Hammer.defaults);
     const sidebarArea = new Hammer(this.$refs.sidebar.$el, Hammer.defaults);
-    sidebarArea.on("pan", (e) => this.sidebarPanHandler(e));
-    hammerArea.on("pan", (e) => {
+    sidebarArea.on("pan", e => this.sidebarPanHandler(e));
+    hammerArea.on("pan", e => {
       this.panHandler(e);
     });
-  },
+  }
 };
 </script>
 
@@ -211,7 +215,11 @@ export default {
   left: 0;
 }
 
-.no-touch {
+swipable-drawer-hidden {
+  display: none !important;
+}
+
+swipable-drawer-unclickable {
   pointer-events: none !important;
 }
 </style>
