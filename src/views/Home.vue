@@ -11,7 +11,6 @@
     />
     <div
       ref="swipeContainer"
-      style="padding: 0.5rem"
       @touchend="touchEndHandler()"
     >
       <div
