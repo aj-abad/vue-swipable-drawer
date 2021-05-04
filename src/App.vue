@@ -17,23 +17,8 @@ export default {
 <style lang="stylus">
 #app {
   height: 100vh;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
-}
-
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 100vw;
-  background: black;
-  z-index: 100;
-}
-
-body {
-  font-family: gotham;
-  font-weight: light;
 }
 
 #menuopen {

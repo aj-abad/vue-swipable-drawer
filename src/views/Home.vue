@@ -6,7 +6,7 @@
       @sidebar-touch-end="touchEndHandler()"
       :class="{
         'swipable-drawer-hidden': translate === -1,
-        'swipable-drawer-unclickable': translate < sidebarWidth
+        'swipable-drawer-unclickable': translate < sidebarWidth,
       }"
     />
     <div
@@ -33,7 +33,7 @@ import Hammer from "hammerjs";
 import anime from "animejs/lib/anime.es.js";
 export default {
   components: {
-    Sidebar
+    Sidebar,
   },
   data() {
     return {
@@ -50,7 +50,7 @@ export default {
       exitVelocity: 0,
       dragFrom: 0,
       translateTo: 0,
-      startSidebarDragTo: 0
+      startSidebarDragTo: 0,
     };
   },
   methods: {
@@ -65,7 +65,7 @@ export default {
         duration: this.transitionSpeed,
         complete() {
           deez.resetSidebar();
-        }
+        },
       });
     },
     panHandler(e) {
@@ -95,7 +95,7 @@ export default {
             deez.translateTo = deez.translate;
             deez.hasMovedToFinger = true;
             if (deez.isSwipe) deez.resetSidebar();
-          }
+          },
         });
       }
       if (!this.hasMovedToFinger) return false;
@@ -143,7 +143,7 @@ export default {
           this.sidebarWidth,
         complete() {
           deez.resetSidebar();
-        }
+        },
       });
     },
     resetSidebar() {
@@ -178,15 +178,15 @@ export default {
         this.dragFrom > this.sidebarWidth ? this.sidebarWidth : this.dragFrom;
       this.translate = dist;
       this.exitVelocity = e.velocityX;
-    }
+    },
   },
   computed: {
     overlayOpacity() {
       return {
         opacity: (this.translate / this.sidebarWidth) * 0.5,
-        pointerEvents: this.translate === this.sidebarWidth ? "all" : "none"
+        pointerEvents: this.translate === this.sidebarWidth ? "all" : "none",
       };
-    }
+    },
   },
   mounted() {
     this.sidebarWidth = Math.floor(
@@ -195,24 +195,29 @@ export default {
     const stage = this.$refs.swipeContainer;
     const hammerArea = new Hammer(stage, Hammer.defaults);
     const sidebarArea = new Hammer(this.$refs.sidebar.$el, Hammer.defaults);
-    sidebarArea.on("pan", e => this.sidebarPanHandler(e));
-    hammerArea.on("pan", e => {
+    sidebarArea.on("pan", (e) => this.sidebarPanHandler(e));
+    hammerArea.on("pan", (e) => {
       this.panHandler(e);
     });
-  }
+  },
 };
 </script>
 
 <style lang="stylus" scoped>
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-  transform: scale(0.9);
-}
-
 .fade-leave-active {
   position: absolute;
   top: 0;
   left: 0;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background: black;
+  z-index: 100;
 }
 
 swipable-drawer-hidden {

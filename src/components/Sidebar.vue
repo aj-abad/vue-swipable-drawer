@@ -16,7 +16,7 @@ export default {
   overflow-y: auto;
   height: 100%;
   width: 22rem;
-  max-width: calc(100% - 2rem);
+  max-width: calc(100%);
   background: white;
   position: fixed;
   z-index: 101;
