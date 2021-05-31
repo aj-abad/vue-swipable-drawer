@@ -1,1 +1,1 @@
-# Vue draggable/swipable sidebar
+# Vue draggable/swipable app drawer
