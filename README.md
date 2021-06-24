@@ -2,4 +2,11 @@
 A drawer menu for your Vue app that supports native-like swipe gestures.
 
 
-##Installation
+## Installation
+
+
+
+
+
+## To-do
+Publish to NPM.
