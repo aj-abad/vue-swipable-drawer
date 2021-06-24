@@ -1,5 +1,5 @@
 # Vue draggable/swipable app drawer
-A drawer menu for your Vue app that supports native-like swipe gestures using Hammer.js and Anime.js
+A drawer menu for your Vue app that supports native-like swipe gestures.
 
 ## To-do
 - Convert to NPM module
