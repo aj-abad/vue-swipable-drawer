@@ -6,7 +6,7 @@ const currentTab = ref<'demo' | 'props' | 'usage'>('demo')
 </script>
 
 <template>
-  <div id="app" class="min-h-screen bg-linear-to-br from-slate-50 to-slate-100">
+  <div id="app">
     <DrawerContainer
       width="300px"
       :swipe-threshold="0.25"
