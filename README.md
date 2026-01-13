@@ -43,4 +43,3 @@ npm run dev
 ## To-do
 
 - Convert to NPM module
-- Back button support with Vue Router
