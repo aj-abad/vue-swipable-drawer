@@ -43,3 +43,4 @@ npm run dev
 ## To-do
 
 - Convert to NPM module
+- Better accessibility
