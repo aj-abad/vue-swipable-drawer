@@ -1,3 +1,30 @@
+<template>
+  <div>
+    <aside
+      id="sidebar"
+      ref="sidebar"
+      :style="sidebarStyle"
+      :class="{
+        'swipable-drawer-hidden': translate === -1,
+        'swipable-drawer-unclickable': translate < sidebarWidth,
+      }"
+      @touchend="touchEndHandler()"
+      @mouseup="touchEndHandler()">
+      <slot name="sidebar" />
+    </aside>
+
+    <div class="sidebar-overlay" :style="overlayStyle" @click="closeSidebar()" />
+
+    <div
+      class="full-height"
+      ref="swipeContainer"
+      @touchend="touchEndHandler()"
+      @mouseup="touchEndHandler()">
+      <slot name="content" />
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import Hammer from "hammerjs";
@@ -248,33 +275,6 @@ defineExpose({
   isOpen,
 });
 </script>
-
-<template>
-  <div>
-    <aside
-      id="sidebar"
-      ref="sidebar"
-      :style="sidebarStyle"
-      :class="{
-        'swipable-drawer-hidden': translate === -1,
-        'swipable-drawer-unclickable': translate < sidebarWidth,
-      }"
-      @touchend="touchEndHandler()"
-      @mouseup="touchEndHandler()">
-      <slot name="sidebar" />
-    </aside>
-
-    <div class="sidebar-overlay" :style="overlayStyle" @click="closeSidebar()" />
-
-    <div
-      class="full-height"
-      ref="swipeContainer"
-      @touchend="touchEndHandler()"
-      @mouseup="touchEndHandler()">
-      <slot name="content" />
-    </div>
-  </div>
-</template>
 
 <style scoped>
 #sidebar {
