@@ -1,26 +1,19 @@
+<script setup lang="ts">
+import DrawerContainer from './components/DrawerContainer.vue'
+</script>
+
 <template>
   <div id="app">
     <DrawerContainer>
-      <template v-slot:sidebar>
+      <template #sidebar>
         <h1 v-for="j in 26" :key="j">{{ j - 26 }}</h1>
       </template>
-      <template v-slot:content>
+      <template #content>
         <h1 v-for="i in 100" :key="i">d</h1>
       </template>
     </DrawerContainer>
   </div>
 </template>
-
-<script>
-import DrawerContainer from "./components/DrawerContainer.vue";
-
-export default {
-  name: "App",
-  components: {
-    DrawerContainer
-  }
-};
-</script>
 
 <style>
 #app {
