@@ -1,34 +1,31 @@
 <template>
   <div id="app">
-    <transition name="fade">
-        <router-view></router-view>
-    </transition>
+    <DrawerContainer>
+      <template v-slot:sidebar>
+        <h1 v-for="j in 26" :key="j">{{ j - 26 }}</h1>
+      </template>
+      <template v-slot:content>
+        <h1 v-for="i in 100" :key="i">d</h1>
+      </template>
+    </DrawerContainer>
   </div>
 </template>
 
 <script>
+import DrawerContainer from "./components/DrawerContainer.vue";
+
 export default {
-  name: "App"
+  name: "App",
+  components: {
+    DrawerContainer
+  }
 };
 </script>
 
-<style lang="stylus">
+<style>
 #app {
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-#menuopen {
-  touch-action: none;
-  height: 100vh;
-  width: 1em;
-  position: fixed;
-  z-index: 99;
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: 0.25s;
 }
 </style>
