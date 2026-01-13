@@ -214,11 +214,13 @@ onMounted(() => {
   if (swipeContainer.value) {
     const hammerArea = new Hammer(swipeContainer.value)
     hammerArea.on('pan', panHandler)
+    hammerArea.on('panend', touchEndHandler)
   }
   
   if (sidebar.value) {
     const sidebarArea = new Hammer(sidebar.value)
     sidebarArea.on('pan', sidebarPanHandler)
+    sidebarArea.on('panend', touchEndHandler)
   }
 })
 </script>
@@ -234,6 +236,7 @@ onMounted(() => {
         'swipable-drawer-unclickable': translate < sidebarWidth
       }"
       @touchend="touchEndHandler()"
+      @mouseup="touchEndHandler()"
     >
       <slot name="sidebar" />
     </aside>
@@ -244,7 +247,7 @@ onMounted(() => {
       @click="closeSidebar()"
     />
     
-    <div class="full-height" ref="swipeContainer" @touchend="touchEndHandler()">
+    <div class="full-height" ref="swipeContainer" @touchend="touchEndHandler()" @mouseup="touchEndHandler()">
       <slot name="content" />
     </div>
   </div>
