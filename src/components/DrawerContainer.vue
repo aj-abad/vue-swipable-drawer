@@ -79,17 +79,21 @@ function panHandler(e: HammerInput) {
       easing: transitionEasing,
       duration: transitionSpeed,
       update(anim: anime.AnimeInstance) {
-        if (isSwipe.value) return
         const currentVal = (anim.animations[0] as any).currentValue
+        translate.value = currentVal
+        
+        // Skip finger-catching logic if this is a swipe-through gesture
+        if (isSwipe.value) return
+        
         if (currentVal > startSidebarDragTo.value) {
           translateTo.value = currentVal
           hasMovedToFinger.value = true
           anim.pause()
         }
-        translate.value = currentVal
       },
       complete() {
-        translateTo.value = translate.value
+        translate.value = sidebarWidth.value
+        translateTo.value = sidebarWidth.value
         hasMovedToFinger.value = true
         if (isSwipe.value) resetSidebar()
       }
