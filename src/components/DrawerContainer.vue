@@ -3,8 +3,28 @@ import { ref, computed, onMounted } from 'vue'
 import Hammer from 'hammerjs'
 import anime from 'animejs/lib/anime.es.js'
 
+export interface DrawerProps {
+  /** Width of the drawer (CSS value) */
+  width?: string
+  /** Velocity threshold for swipe detection (0-1) */
+  swipeThreshold?: number
+  /** Overlay background color */
+  overlayColor?: string
+  /** Maximum overlay opacity (0-1) */
+  overlayOpacity?: number
+  /** Transition duration in milliseconds */
+  transitionSpeed?: number
+}
+
+const props = withDefaults(defineProps<DrawerProps>(), {
+  width: '22rem',
+  swipeThreshold: 0.2,
+  overlayColor: 'rgba(0, 0, 0, 1)',
+  overlayOpacity: 0.5,
+  transitionSpeed: 300
+})
+
 const transitionEasing = 'cubicBezier(.25,.1,.25,1)'
-const transitionSpeed = 300
 
 const sidebar = ref<HTMLElement | null>(null)
 const swipeContainer = ref<HTMLElement | null>(null)
@@ -22,9 +42,15 @@ const dragFrom = ref(0)
 const translateTo = ref(0)
 const startSidebarDragTo = ref(0)
 
-const overlayOpacity = computed(() => ({
-  opacity: (translate.value / sidebarWidth.value) * 0.5,
-  pointerEvents: translate.value === sidebarWidth.value ? 'all' : 'none' as const
+const overlayStyle = computed(() => ({
+  opacity: (translate.value / sidebarWidth.value) * props.overlayOpacity,
+  pointerEvents: translate.value === sidebarWidth.value ? 'all' : 'none' as const,
+  background: props.overlayColor
+}))
+
+const sidebarStyle = computed(() => ({
+  left: `${translate.value}px`,
+  width: props.width
 }))
 
 function resetSidebar() {
@@ -47,7 +73,7 @@ function closeSidebar() {
     targets: { val: translate.value },
     val: -1,
     easing: transitionEasing,
-    duration: transitionSpeed,
+    duration: props.transitionSpeed,
     update(anim: anime.AnimeInstance) {
       translate.value = (anim.animations[0] as any).currentValue
     },
@@ -77,7 +103,7 @@ function panHandler(e: HammerInput) {
       targets: { val: translate.value },
       val: sidebarWidth.value,
       easing: transitionEasing,
-      duration: transitionSpeed,
+      duration: props.transitionSpeed,
       update(anim: anime.AnimeInstance) {
         const currentVal = (anim.animations[0] as any).currentValue
         translate.value = currentVal
@@ -138,14 +164,14 @@ function touchEndHandler() {
   
   isResetting.value = true
   let animateTo = translate.value > sidebarWidth.value / 2 ? sidebarWidth.value : -1
-  animateTo = exitVelocity.value < -0.2 ? -1 : animateTo
-  animateTo = exitVelocity.value > 0.2 ? sidebarWidth.value : animateTo
+  animateTo = exitVelocity.value < -props.swipeThreshold ? -1 : animateTo
+  animateTo = exitVelocity.value > props.swipeThreshold ? sidebarWidth.value : animateTo
   
   anime({
     targets: { val: translate.value },
     val: animateTo,
     easing: transitionEasing,
-    duration: (transitionSpeed * Math.abs(translate.value - animateTo)) / sidebarWidth.value,
+    duration: (props.transitionSpeed * Math.abs(translate.value - animateTo)) / sidebarWidth.value,
     update(anim: anime.AnimeInstance) {
       translate.value = (anim.animations[0] as any).currentValue
     },
@@ -202,7 +228,7 @@ onMounted(() => {
     <aside
       id="sidebar"
       ref="sidebar"
-      :style="{ left: `${translate}px` }"
+      :style="sidebarStyle"
       :class="{
         'swipable-drawer-hidden': translate === -1,
         'swipable-drawer-unclickable': translate < sidebarWidth
@@ -214,7 +240,7 @@ onMounted(() => {
 
     <div
       class="sidebar-overlay"
-      :style="overlayOpacity"
+      :style="overlayStyle"
       @click="closeSidebar()"
     />
     
@@ -228,7 +254,6 @@ onMounted(() => {
 #sidebar {
   overflow-y: auto;
   height: 100%;
-  width: 22rem;
   max-width: 100%;
   background: white;
   position: fixed;
@@ -238,12 +263,8 @@ onMounted(() => {
 
 .full-height {
   min-height: 100vh;
-}
-
-.fade-leave-active {
-  position: absolute;
-  top: 0;
-  left: 0;
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
 }
 
 .sidebar-overlay {
@@ -252,7 +273,6 @@ onMounted(() => {
   left: 0;
   height: 100vh;
   width: 100vw;
-  background: black;
   z-index: 100;
 }
 
