@@ -71,7 +71,7 @@ const startSidebarDragTo = ref(0);
 
 const overlayStyle = computed(() => ({
   opacity: (translate.value / sidebarWidth.value) * props.overlayOpacity,
-  pointerEvents: translate.value === sidebarWidth.value ? "all" : ("none" as const),
+  pointerEvents: translate.value === sidebarWidth.value ? ("all" as const) : ("none" as const),
   background: props.overlayColor,
 }));
 
