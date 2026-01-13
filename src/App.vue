@@ -15,51 +15,51 @@ const currentTab = ref<'demo' | 'props' | 'usage'>('demo')
       :transition-speed="280"
     >
       <template #sidebar>
-        <nav class="h-full bg-linear-to-b from-indigo-600 to-purple-700 text-white">
-          <div class="p-6 border-b border-white/10">
-            <h2 class="text-xl font-bold">Vue Swipable Drawer</h2>
-            <p class="text-sm text-indigo-200 mt-1">v1.0.0</p>
+        <nav class="h-full bg-slate-900 text-slate-100">
+          <div class="p-6 border-b border-slate-700/50">
+            <h2 class="text-xl font-semibold tracking-tight">Vue Swipable Drawer</h2>
+            <p class="text-xs text-slate-400 mt-1 font-medium">v1.0.0</p>
           </div>
-          <ul class="p-4 space-y-1">
+          <ul class="p-3 space-y-1">
             <li>
               <a
                 href="#"
                 @click.prevent="currentTab = 'demo'"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-                :class="currentTab === 'demo' ? 'bg-white/20' : 'hover:bg-white/10'"
+                class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-150"
+                :class="currentTab === 'demo' ? 'bg-slate-700/70 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'"
               >
-                <span>🎯</span>
-                <span>Demo</span>
+                <span class="text-sm">🎯</span>
+                <span class="text-sm font-medium">Demo</span>
               </a>
             </li>
             <li>
               <a
                 href="#"
                 @click.prevent="currentTab = 'props'"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-                :class="currentTab === 'props' ? 'bg-white/20' : 'hover:bg-white/10'"
+                class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-150"
+                :class="currentTab === 'props' ? 'bg-slate-700/70 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'"
               >
-                <span>⚙️</span>
-                <span>Props</span>
+                <span class="text-sm">⚙️</span>
+                <span class="text-sm font-medium">Props</span>
               </a>
             </li>
             <li>
               <a
                 href="#"
                 @click.prevent="currentTab = 'usage'"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-                :class="currentTab === 'usage' ? 'bg-white/20' : 'hover:bg-white/10'"
+                class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-150"
+                :class="currentTab === 'usage' ? 'bg-slate-700/70 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'"
               >
-                <span>📖</span>
-                <span>Usage</span>
+                <span class="text-sm">📖</span>
+                <span class="text-sm font-medium">Usage</span>
               </a>
             </li>
           </ul>
-          <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+          <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700/50">
             <a
               href="https://github.com"
               target="_blank"
-              class="flex items-center gap-2 text-sm text-indigo-200 hover:text-white transition-colors"
+              class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
             >
               <span>⭐</span>
               <span>Star on GitHub</span>
